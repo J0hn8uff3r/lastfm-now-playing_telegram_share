@@ -1,4 +1,3 @@
-lastfm-now
 pyrogram
 tgcrypto
 urllib3
