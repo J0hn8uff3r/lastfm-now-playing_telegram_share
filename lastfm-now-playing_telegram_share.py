@@ -35,6 +35,17 @@ def elapsed_minutes():
     return (perf_counter()-start)/60
 
 
+def restore_original_name():
+    global app
+    global previous_name
+    try:
+        with app:
+            app.update_profile(first_name=previous_name)
+            print("Name restored to: " + previous_name)
+    except:
+        pass
+
+
 def checkForNewSong():
     global currentShowedSong
     global minutes_to_wait_until_set_original_telegram_name
@@ -45,16 +56,14 @@ def checkForNewSong():
     currentTrack = minidom.parseString(currentTrackXML)
     songName = currentTrack.getElementsByTagName('name')
     songArtist = currentTrack.getElementsByTagName('artist')
-    currentSongInfo = '🎶'+songName[0].firstChild.nodeValue + \
-        " - " + songArtist[0].firstChild.nodeValue + '🎶'
+    currentSongInfo = songName[0].firstChild.nodeValue + \
+        " - " + songArtist[0].firstChild.nodeValue
 
     if currentShowedSong != currentSongInfo:
         newdiskCover = currentTrack.getElementsByTagName(
             'image')[3].firstChild.nodeValue
         currentShowedSong = currentSongInfo
-        # print(currentSongInfo)
-        # newdiskCover = currentTrack.getElementsByTagName(
-        #     'image')[3].firstChild.nodeValue
+
         if newdiskCover != diskCover:
             newdiskCover = newdiskCover.replace("300x300", "1200x1200")
             print(newdiskCover)
@@ -67,32 +76,25 @@ def checkForNewSong():
             print("Profile picture changed to: " + diskCover)
 
         with app:
-            app.update_profile(first_name=currentSongInfo)
-            print("Name changed to: " + currentSongInfo)
+            app.update_profile(first_name='🎶'+currentSongInfo+'🎶')
+            print("Name changed to: " + '🎶'+currentSongInfo+'🎶')
 
-    elif elapsed_minutes() >= minutes_to_wait_until_set_original_telegram_name:
+    if elapsed_minutes() >= minutes_to_wait_until_set_original_telegram_name and currentSongInfo == currentShowedSong:
         start = perf_counter()
-        currentSongInfo = ""
-        global previous_name
-        try:
-            with app:
-                # if app.get_users("me").first_name != previous_name:
-                app.update_profile(first_name=previous_name)
-                print("Name restored to: " + previous_name)
-        except:
-            pass
+        # currentSongInfo = ""
+        restore_original_name()
     sleep(waitTime)
 
 
-def main():
+if __name__ == '__main__':
     while True:
         try:
             checkForNewSong()
-            # newSongThread = threading.Thread(target=checkForNewSong)
-            # newSongThread.start()
-        except:
-            pass
-
-
-if __name__ == "__main__":
-    main()
+        except KeyboardInterrupt:
+            print('KeyboardInterruption')
+            try:
+                restore_original_name()
+                sys.exit(0)
+            except SystemExit:
+                restore_original_name()
+                os._exit(0)
