@@ -23,6 +23,7 @@ waitTime = 1
 
 
 def elapsed_minutes():
+    global start
     return (perf_counter()-start)/60
 
 
@@ -48,17 +49,18 @@ def remove_first_profile_photo():
         pass
 
 
-def set_first_profile_photo(newdiskCover):
-    global file
+def set_first_profile_photo(newdiskCover, file):
+    # global file
     newdiskCover = newdiskCover.replace("300x300", "1200x1200")
     print(newdiskCover)
     os.system("curl -k -o cover_lastfm.jpg " + newdiskCover)
     newdiskCover = newdiskCover.replace("1200x1200", "300x300")
     diskCover = newdiskCover
     print(newdiskCover)
+    remove_first_profile_photo()
     with app:
         app.set_profile_photo(photo="cover_lastfm.jpg")
-        print("Profile picture changed to: " + diskCover)
+        print("Profile picture changed to: " + newdiskCover)
     file.seek(0)
     file.write(newdiskCover)
     file.truncate()
@@ -74,10 +76,11 @@ def last_cover_checker(newdiskCover):
     if newdiskCover != "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png":
         with open("last_cover_url.txt", "r+") as file:
             last_cover_url = file.readline()
-            print("Last_cover_url: " + last_cover_url)
-            print("New_cover_url: " + newdiskCover)
+
             if last_cover_url != newdiskCover:
-                set_first_profile_photo(newdiskCover)
+                print("Last_cover_url: " + last_cover_url)
+                print("New_cover_url: " + newdiskCover)
+                set_first_profile_photo(newdiskCover, file)
 
 
 def reset_time_counter():
@@ -121,9 +124,7 @@ def checkForNewSong():
             reset_time_counter()
             newdiskCover = get_album_cover()
             currentShowedSong = currentSongInfo
-
             profile_name_changer(currentSongInfo)
-
             if newdiskCover != diskCover:
                 last_cover_checker(newdiskCover)
 
@@ -132,6 +133,8 @@ def checkForNewSong():
             pass
 
     if elapsed_minutes() >= minutes_to_wait_until_set_original_telegram_name:
+        print(str(elapsed_minutes))
+        print(str(minutes_to_wait_until_set_original_telegram_name))
         reset_time_counter()
         try:
             with app:
@@ -142,6 +145,7 @@ def checkForNewSong():
         except Exception as e:
             print(e)
             pass
+        print("TIEMPO")
     sleep(waitTime)
 
 
