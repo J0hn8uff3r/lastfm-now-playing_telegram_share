@@ -2,6 +2,7 @@
 This bot use Last.fm and Telegram API and changes username when a new song is playing and scrobbled.
 
 You can get your Last.fm API key here:
+
 https://www.last.fm/api/authentication
 
 https://www.last.fm/api/accounts
